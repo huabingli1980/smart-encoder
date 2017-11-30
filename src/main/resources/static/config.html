@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ZD Inspector</title>
+<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link href="/css/bootstrap-switch.css" rel="stylesheet">
+<link href="/main.css" rel="stylesheet">
+<meta charset="UTF-8">
+</head>
+<body>
+	<div class="container">
+		<div class="">
+			<select name="configName" class="form-control" id="configName">
+			</select>
+		</div>
+		<div id="config">
+			<h2>Application Configuration</h2>
+			<div class="form-horizontal">
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Name</label>
+					<div class="col-sm-10">
+						<input name="name" class="form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Host IP</label>
+					<div class="col-sm-10">
+						<input name="host" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Pulse Duration</label>
+					<div class="col-sm-10">
+						<input type="number" name="pulse.duration" class="form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Delay(actual delay
+						will need extra 40 miliseconds)</label>
+					<div class="col-sm-10">
+						<input type="number" name="delay" class="form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">GPI Port For
+						Dectecting Pass(1-4)</label>
+					<div class="col-sm-10">
+						<input name="port.pass" class="form-control" pattern="[1-4]" />
+					</div>
+
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">转圈数</label>
+					<div class="col-sm-10">
+						<input type="number" name="leading.pass.threshold"
+							class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">GPI Port For
+						Dectecting Revolve(1-4)</label>
+					<div class="col-sm-10">
+						<input name="port.revolve" class="form-control" pattern="[1-4]" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Detect
+						Antena(1,2,3,4)</label>
+					<div class="col-sm-10">
+						<input name="detect.ant" class="form-control" pattern="[1-4]" />
+					</div>
+
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Detect Power[0, 30]</label>
+					<div class="col-sm-10">
+						<input type="number" name="detect.power" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Receive
+						Sensitivity(Dbm)[-70, 0]</label>
+					<div class="col-sm-10">
+						<input type="number" name="receive.sensitivity"
+							class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Detect Read Duration</label>
+					<div class="col-sm-10">
+						<input type="number" name="detect.readduration"
+							class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Auto Read
+						Antena(1,2,3,4)</label>
+					<div class="col-sm-10">
+						<input name="read.ant" class="form-control" pattern="[1-4]" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Auto Read Power</label>
+					<div class="col-sm-10">
+						<input type="number" name="read.power" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Auto Read Duration</label>
+					<div class="col-sm-10">
+						<input name="read.readduration" class="form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">GPO Port
+						Number(1,2,3,4)</label>
+					<div class="col-sm-10">
+						<input name="gpo.port" class="form-control" value="1"
+							pattern="[1-4]" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Order Change</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stop_on_order_change"
+							class="checkbox form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Duplicate</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stoponduplicate"
+							class="checkbox form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Header Change</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stoponhc"
+							class="checkbox form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Abnormal
+						Header</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stoponah"
+							class="checkbox form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Empty Read
+						Exception</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stoponemptyread"
+							class="checkbox form-control" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">Stop On Multiple Read
+						Exception</label>
+					<div class="col-sm-10">
+						<input type="checkbox" name="ctrl.stoponmultipleread"
+							class="checkbox form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Header Length to
+						compare</label>
+					<div class="col-sm-10">
+						<input type="number" name="compare.header.len"
+							class="form-control" value="15" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label col-sm-2">Order data file path</label>
+					<div class="col-sm-10">
+						<input type="text" name="path.order.data" class="form-control" />
+					</div>
+				</div>
+
+
+				<div class="form-group">
+
+					<div class="col-sm-offset-2 col-sm-10">
+						<button onclick="submit()" class="btn btn-default form-control">apply</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+
+	</div>
+</body>
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/tether.min.js"></script>
+<script src="/bootstrap.min.js"></script>
+<script src="/bootstrap-switch.js"></script>
+<script>
+	$(function() {
+
+		$("#configName").on(
+				"change",
+				function() {
+					$("[name='name']").val($(this).val());
+					$("[name='name']").text($(this).val());
+					$.ajax({
+						url : "/getConfig",
+						data : {
+							name : $("#configName").val()
+						},
+						type : "GET",
+						contentType : "application/json; charset=utf-8",
+						async : false, //Cross-domain requests and dataType: "jsonp" requests do not support synchronous operation
+						cache : false, //This will force requested pages not to be cached by the browser 
+						success : function(resposeJsonObject) {
+							// Success Action
+
+							for (k in resposeJsonObject) {
+
+								console.log(k);
+								var e = $("#config input[name='" + k + "']");
+
+								if (e.attr("type") == 'checkbox') {
+									e.bootstrapSwitch("state",
+											(resposeJsonObject[k] == 'true'));
+								} else {
+									e.val(resposeJsonObject[k]);
+								}
+							}
+
+						}
+					});
+				});
+
+		$.get("/getConfigNames", function(names) {
+			var configEle = $("#configName");
+			names.forEach(function(e, i) {
+				configEle.append("<option value='"
+						+ e.replace(".properties", "") + "'>"
+						+ e.replace(".properties", "") + "</option>");
+			})
+
+			$("#configName").prop("selectedIndex", 1).change();
+
+		});
+
+	});
+	$(".checkbox").bootstrapSwitch();
+
+	function submit() {
+
+		var config = {};
+		$("#config input").each(function(i, e) {
+			console.log(i);
+			var name = e.name;
+			var value = e.value;
+			if ($(e).attr("type") == 'checkbox') {
+				value = $(e).bootstrapSwitch("state");
+			}
+			config[name] = value;
+		})
+
+		console.log(config);
+
+		$.ajax({
+			url : "/saveConfig",
+			type : "POST",
+			contentType : "application/json; charset=utf-8",
+			data : JSON.stringify(config), //Stringified Json Object
+			async : false, //Cross-domain requests and dataType: "jsonp" requests do not support synchronous operation
+			cache : false, //This will force requested pages not to be cached by the browser  
+			processData : false, //To avoid making query String instead of JSON
+			success : function(resposeJsonObject) {
+				// Success Action
+				console.log(resposeJsonObject);
+			}
+		});
+	}
+</script>
+</html>

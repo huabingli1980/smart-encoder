@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ZD Inspector</title>
+<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+<link href="/main.css" rel="stylesheet">
+<meta charset="UTF-8">
+</head>
+<body>
+
+    
+    <div class="modal fade bs-example-modal-sm modal-emtpy" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+  
+  <i id="readin-indicator" class="fa fa-circle grey" aria-hidden="true"
+                        style="font-size:5em;margin-left:25px;"></i>
+    <div class="modal-content">
+        <div id="ctn-reenter"><input type="checkbox" checked onchange="readInEPC(this)"/><label>Is Strike Out</label></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade bs-example-modal-sm modal-add" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    
+    <div class="modal-content">
+        <i id="readin-indicator-add" class="fa fa-circle grey" aria-hidden="true"
+                        style="font-size:5em;margin-left:25px;"></i>
+                        
+        <!-- <input type="checkbox" checked onchange="isDead(this)"/><label>Is Dead?</label> -->
+    </div>
+  </div>
+</div>  
+ <div class="modal fade bs-example-modal-sm modal-multiple" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    
+    <div class="modal-content">
+     Test
+    </div>
+  </div>
+</div>
+
+	<div class="container" id="banner">
+		<h3>ZD Inspector</h3>
+	</div>
+    <div id="version"></div>
+	<div id="main-content">
+	<i id="working-indicator" class="fa fa-circle" aria-hidden="true"
+                        style="color: grey;font-size:5em;margin-left:25px;"></i>
+		<div class="container">
+			<div class="row col-sm-12">
+				<button id="connect" class="btn btn-default input-xs" type="submit">Connect</button>
+				<button id="disconnect" class="btn btn-default input-xs"
+					type="submit" disabled="disabled">Disconnect</button>
+
+				<span id="curTime"></span> <i class="fa fa-plug" aria-hidden="true"
+					style="color: grey"></i> <a
+					href="/config.html" target="_blank">Setttings</a>
+				<a href="/prod.html" target="_blank">Prod
+					Leading Time</a>
+			</div>
+		</div>
+
+
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8">
+					<div class="row">
+						<div class="col-md-3">
+
+							<select name="configName" class="form-control" id="configName">
+
+							</select>
+						</div>
+					</div>
+					<div class="row order-info">
+					    <div class="col-md-3">
+                            <select name="orderType" class="form-control" id="order-type-list">
+                                <option value="0">Non-Macy</option>
+                                <option value="1">Macy</option>
+                            </select>
+                        </div>
+						<div class="col-md-3">
+							<input name="orderNumber" class="form-control"
+								placeholder="Order Number" required/>
+						</div>
+						<div class="col-md-3">
+							<input name="skuCount" class="form-control"
+								placeholder="SKU Count" required disabled/>
+							<div class="hidden">1 sku count:<input type="checkbox" 
+                                value="1 sku count" onchange="onCheckOne(this)" checked></input></div>
+						</div>
+
+						<div class="col-md-3">
+							<select name="codeType" class="form-control" id="sel1">
+								<option>EPC_Only</option>
+								<option>GU_TID</option>
+								<option>Plus1</option>
+								<option>Target_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>Generic_EPC17</option>
+								<option>UQ</option>
+								<option>Polo_EU_LPL</option>
+								<option>Udiz_QR</option>
+							</select>
+						</div>
+
+					</div>
+
+					<div class="row order-info">
+					
+					    <div class="col-md-3">
+                            <select name="orderType" class="form-control" id="order-type-list">
+                              <option value="0">Non-Macy</option>
+                              <option value="1">Macy</option>
+                            </select>
+                        </div>
+						<div class="col-md-3">
+							<input name="orderNumber" class="form-control"
+								placeholder="Order Number" required />
+						</div>
+						<div class="col-md-3">
+							<input name="skuCount" class="form-control"
+								placeholder="SKU Count" required disabled/>
+								<div class="hidden">1 sku count:<input type="checkbox" 
+                                value="1 sku count" onchange="onCheckOne(this)" checked></input></div>
+						</div>
+
+						<div class="col-md-3">
+							<select name="codeType" class="form-control" id="sel1">
+								<option>EPC_Only</option>
+								<option>GU_TID</option>
+								<option>Plus1</option>
+								<option>Target_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>Generic_EPC17</option>
+								<option>UQ</option>
+								<option>Polo_EU_LPL</option>
+								<option>Udiz_QR</option>
+							</select>
+						</div>
+
+					</div>
+					<div class="row order-info">
+					
+					     <div class="col-md-3">
+                            <select name="orderType" class="form-control" id="order-type-list">
+                                <option value="0">Non-Macy</option>
+                                <option value="1">Macy</option>
+                            </select>
+                        </div>
+						<div class="col-md-3">
+							<input name="orderNumber" class="form-control"
+								placeholder="Order Number" required />
+						</div>
+						<div class="col-md-3">
+							<input name="skuCount" class="form-control"
+								placeholder="SKU Count" required disabled/>
+							<div class="hidden">1 sku count:<input type="checkbox" 
+                                value="1 sku count" onchange="onCheckOne(this)" checked></input></div>
+						</div>
+
+						<div class="col-md-3">
+							<select name="codeType" class="form-control" id="sel1">
+								<option>EPC_Only</option>
+								<option>GU_TID</option>
+								<option>Plus1</option>
+								<option>Target_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>GU_EAN12_EPC17</option>
+								<option>Generic_EPC17</option>
+								<option>UQ</option>
+								<option>Polo_EU_LPL</option>
+								<option>Udiz_QR</option>
+							</select>
+						</div>
+
+						<!-- <div class="col-md-2">
+							<input id="btn-submit-order" type="button" value="Append Order"
+								class="btn btn-primary" />
+						</div> -->
+					</div>
+				</div>
+				<div class="col-md-4 indicator text-center">
+					<div class="row">
+						<div class="cnt-ind-assist col-sm-6">
+							<label>Trigger Count:</label><span id="trigger-count" >0</span>
+							<p>电眼触发信号计数</p>
+						</div>
+						<div class="cnt-ind-assist col-sm-6">
+							<label>Read Count:</label><span id="read-count">0</span>
+							<p>读取芯片计数</p>
+						</div>
+
+					</div>
+					<div class="row">
+						<div class="col-sm-12 ctn-counter">
+						  <div class="row cnt-ind cnt-ind-total">
+                            <label style="padding-left:5px;">Total Count:</label><span id="totalCount">0</span>
+                            <p>当前订单所有读取产品计数</p>
+                        </div>
+                        <div class="row cnt-ind cnt-ind-Leading">
+                            <label>Leading Count:</label><span id="leadingCount">0</span>
+                            <p>当前订单过白纸计数</p>
+                        </div>
+                        <div class="row cnt-ind cnt-ind-good">
+                            <label>Good Count:</label><span id="goodCount">0</span>
+                            <p>当前订单读取EPC正常产品计数</p>
+                        </div>
+                        <div class="row cnt-ind cnt-ind-bad">
+                            <div class="col-sm-6 bad-summary"><label style="padding-left:12px;">Bad Count:</label> <span id="wrongTotal" >0</span>
+                            <p>当前订单读取EPC不良产品计数</p>
+                            </div>
+                            <div class="col-sm-6 bad-specific">
+                                 <div class="pull-left"><label>EPC Can not read count:</label><span id="unreadableCount" >0</span>
+                                 <p>当前订单读取EPC不可读产品计数</p></div>
+                                 
+                                  <div class="pull-left"><label>EPC Wrong count:</label><span id="wrongCount" >0</span>
+                                 <p>当前订单读取EPC错误产品计数</p></div>
+                                 
+                                  <div class="pull-left"><label>EPC Duplicate count:</label><span id="duplicateCount" >0</span>
+                                 <p>当前订单读取EPC重复产品计数</p></div>
+                                 
+                                 
+                            </div>
+                        </div>
+						</div>
+					</div>
+				</div>
+
+
+
+			</div>
+		</div>
+
+		<div class="container">
+			<button onclick="startInspection()"
+				class="btn-start-inspection btn btn-default btn-sm disabled">Start
+				Inspection</button>
+			<button onclick="stopInspection()"
+				class="btn-end-inspection btn btn-default btn-sm disabled">End
+				Inspection</button>
+			<button onclick="navigate()" class="btn btn-default btn-sm">To
+				Offline QC</button>
+		</div>
+        <div id="production-list" class="container"></div>
+		<div class="container">
+			<div class="container" id="data-container">
+				
+					<table id="conversation" class="table tableBodyScroll">
+						<thead>
+							<tr>
+								<th style="width:10%">Seq</th>
+								<th style="width:10%">SKU</th>
+
+								<th style="width:12%">State</th>
+								<th style="width:29%">TID</th>
+								<th style="width:29%">EPC</th>
+								<th style="width:20%">Time</th>
+							</tr>
+						</thead>
+						<tbody id="greetings">
+						</tbody>
+					</table>
+				
+			</div>
+		</div>
+
+	</div>
+
+	<div id="offline-qc" class="container">
+
+		<h1>Offline QC</h1>
+		<button onclick="toMain()" class="btn btn-default">To Online
+			QC</button>
+		<input id="orderNumToSave" class="form-control order-input input-sm"
+			placeholder="Order Number" required />
+		<button onclick="startAutomaticReading()" class="btn btn-default"
+			id="btn-start-read">Start Reading</button>
+		<button onclick="stopAutomaticReading()" class="btn btn-default"
+			id="btn-stop-read">Stop Reading</button>
+		<div style="font-size: 3em; border: 2px solid red">
+			Detected Count:<span id="detect-count">0</span>
+		</div>
+		<h3>Bad Tags with good EPC:</h3>
+		<div id="filepath"></div>
+		<hr>
+		<div id="badTags" class="container">
+		    <!-- <input name="badTag[]" value="323456789ABCDEF002"/> -->
+		</div>
+
+		<div class="submit-btn">
+			<button onclick="submit()" class="btn btn-default">Submit
+				for QC data</button>
+		</div>
+	</div>
+</body>
+<script src="/webjars/jquery/jquery.min.js"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script src="/tether.min.js"></script>
+<script src="/bootstrap.min.js"></script>
+<script src="/app.js"></script>
+<script type="text/javascript">
+    $.get("/version").done(function(resp){
+	    var entries = JSON.parse(resp).entries;
+	    var name = entries.name;
+	    var version = entries.version;
+	    var time = entries.time
+	    
+	    var d = new Date();
+	    d.setTime(time);
+	    var formattedTime = d.customFormat("#MM#/#DD# #hhh#:#mm#");
+	    $("#curTime").text(name + "-" + version + " @" + formattedTime);
+	
+    });
+</script>
+</html>
