@@ -124,7 +124,8 @@ public class OIC
                 pass.setMissPass(true);
                 pass.setDiff(diff);
                 OIC.missingAfter = currentEPC;
-                ReaderManager.stopPrinter(8000);
+                final Long pulseDuration = Long.valueOf(ApplicationConfig.get("stop.duration", "8000"));
+                ReaderManager.stopPrinter(pulseDuration);
             }
         }
         OIC.isLassPassEmpty2 = false;

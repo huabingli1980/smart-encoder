@@ -31,7 +31,7 @@ import org.springframework.boot.info.BuildProperties;
 
 import com.sqlite.utils.ReaderProxy;
 
-@Controller
+//@Controller
 public class GreetingController2 {
 	@Autowired
 	private ReaderProxy scannerMain;

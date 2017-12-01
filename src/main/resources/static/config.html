@@ -60,6 +60,13 @@
 							class="form-control" />
 					</div>
 				</div>
+				<div class="form-group">
+					<label class="control-label col-sm-2">停机信号持续几秒</label>
+					<div class="col-sm-10">
+						<input type="number" name="stop.duration"
+							class="form-control" />
+					</div>
+				</div>
 
 				<div class="form-group">
 					<label class="control-label col-sm-2">GPI Port For
@@ -249,7 +256,9 @@
 						}
 					});
 				});
-
+		
+		$(".checkbox").bootstrapSwitch();
+		
 		$.get("/getConfigNames", function(names) {
 			var configEle = $("#configName");
 			names.forEach(function(e, i) {
@@ -258,12 +267,14 @@
 						+ e.replace(".properties", "") + "</option>");
 			})
 
-			$("#configName").prop("selectedIndex", 1).change();
+			$("#configName").prop("selectedIndex", 0).change();
 
 		});
-
 	});
-	$(".checkbox").bootstrapSwitch();
+	
+	
+	
+	
 
 	function submit() {
 

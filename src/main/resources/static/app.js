@@ -182,6 +182,7 @@ function showGreeting(resp) {
             return $(this).text() === message.epc;
         }).parent().addClass("wrong");
         duplicateCount++;
+        resp.state = "EPC重复(Duplicate)"
     }
 
     if (resp.state == "multiple-read-exception") {
@@ -192,7 +193,7 @@ function showGreeting(resp) {
 
     if (resp.isStrikeout) {
         var lastRow = $("tr").last();
-        lastRow.find("td:nth-child(3)").text("emtpy(strikout)");
+        lastRow.find("td:nth-child(3)").text("黑线（Stripped out）");
         unreadableCount++;
     }
 
@@ -200,7 +201,7 @@ function showGreeting(resp) {
     if (resp.isLastPassWrong) {
         var lastRow = $("tr").last();
         lastRow.removeClass("GOOD").addClass("wrong");
-        lastRow.find("td:nth-child(3)").text("wrong");
+        lastRow.find("td:nth-child(3)").text("EPC错误（wrong）");
         lastRow.find("td:nth-child(2)").text("0");
         //alert("abnormal header");
         resp.state = "GOOD";
@@ -213,7 +214,7 @@ function showGreeting(resp) {
             var lastRow = $("#greetings tr").last();
             var targetRow = lastRow.prev();
             targetRow.removeClass("GOOD").addClass("wrong");
-            targetRow.find("td:nth-child(3)").text("wrong");
+            targetRow.find("td:nth-child(3)").text("EPC错误（wrong）");
             targetRow.find("td:nth-child(2)").text("0");
 
         }
@@ -234,7 +235,7 @@ function showGreeting(resp) {
     }
 
     if (resp.state == 'BLANK') {
-        resp.state = "不可读";
+        resp.state = "不可读（Can not read）";
         unreadableCount++;
     }
 
@@ -704,8 +705,8 @@ function startInspection() {
 }
 
 function appendOrder() {
-
-    var data = {
+	var me = $(".row.order-info").first(); me.before(me.clone());
+    /*var data = {
         configName: "",
         orders: getOrdersToInspect()
     };
@@ -722,7 +723,7 @@ function appendOrder() {
         console.log(errObj);
         console.log(statusCode);
         console.log(message);
-    });
+    });*/
 }
 
 function stopInspection() {

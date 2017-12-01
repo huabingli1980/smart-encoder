@@ -49,16 +49,39 @@
 	<i id="working-indicator" class="fa fa-circle" aria-hidden="true"
                         style="color: grey;font-size:5em;margin-left:25px;"></i>
 		<div class="container">
-			<div class="row col-sm-12">
-				<button id="connect" class="btn btn-default input-xs" type="submit">Connect</button>
-				<button id="disconnect" class="btn btn-default input-xs"
+			<div class="row">
+				<div class="col-sm-1">
+			     	<label class="cn">连接</label><br>
+			     	<button id="connect" class="btn btn-default input-xs" type="submit">Connect</button>
+				</div>
+				
+				 <div class="col-sm-1">
+			     	<label class="cn">断开连接</label><br>
+			     	<button id="disconnect" class="btn btn-default input-xs"
 					type="submit" disabled="disabled">Disconnect</button>
 
-				<span id="curTime"></span> <i class="fa fa-plug" aria-hidden="true"
-					style="color: grey"></i> <a
-					href="/config.html" target="_blank">Setttings</a>
-				<a href="/prod.html" target="_blank">Prod
+				</div>
+				
+				<div class="col-sm-3">
+				<label class="cn">当前版本</label><br>
+			     	<span id="curTime"></span> <i class="fa fa-plug" aria-hidden="true"
+					style="color: grey"></i> 
+				
+				
+				</div>
+				<div class="col-sm-1">
+				<label class="cn">参数设置</label><br>
+					<a
+					href="javascript:goSetting()" target="_blank">Setttings</a>
+				</div>
+				
+				<div class="col-sm-2">
+				<label class="cn">其他</label><br>
+					<a href="/prod.html" target="_blank">Prod
 					Leading Time</a>
+				</div>
+				
+				
 			</div>
 		</div>
 
@@ -178,10 +201,10 @@
 							</select>
 						</div>
 
-						<!-- <div class="col-md-2">
-							<input id="btn-submit-order" type="button" value="Append Order"
+						<div class="col-md-2">
+							<input id="btn-submit-order" type="button" value="追加订单"
 								class="btn btn-primary" />
-						</div> -->
+						</div>
 					</div>
 				</div>
 				<div class="col-md-4 indicator text-center">
@@ -237,14 +260,31 @@
 		</div>
 
 		<div class="container">
-			<button onclick="startInspection()"
+		    
+			<div class="row">
+				<div class="col-sm-2">
+				<label>开始检测</label><br>
+				<button onclick="startInspection()"
 				class="btn-start-inspection btn btn-default btn-sm disabled">Start
 				Inspection</button>
-			<button onclick="stopInspection()"
+			</div>
+			
+			<div class="col-sm-2">
+			<label>停止检测</label><br>
+				<button onclick="stopInspection()"
 				class="btn-end-inspection btn btn-default btn-sm disabled">End
 				Inspection</button>
-			<button onclick="navigate()" class="btn btn-default btn-sm">To
+			</div>
+			
+			
+			<div class="col-sm-2">
+			<label>印刷不良品检测</label><br>
+				<button onclick="navigate()" class="btn btn-default btn-sm">To
 				Offline QC</button>
+			</div>
+			</div>
+			
+			
 		</div>
         <div id="production-list" class="container"></div>
 		<div class="container">
@@ -273,19 +313,19 @@
 
 	<div id="offline-qc" class="container">
 
-		<h1>Offline QC</h1>
-		<button onclick="toMain()" class="btn btn-default">To Online
-			QC</button>
+		<h1>离线质量检测(Offline QC)</h1>
+		<button onclick="toMain()" class="btn btn-default">返回在线质量检测（To Online
+			QC）</button>
 		<input id="orderNumToSave" class="form-control order-input input-sm"
 			placeholder="Order Number" required />
 		<button onclick="startAutomaticReading()" class="btn btn-default"
-			id="btn-start-read">Start Reading</button>
+			id="btn-start-read">开启读（Start Reading）</button>
 		<button onclick="stopAutomaticReading()" class="btn btn-default"
-			id="btn-stop-read">Stop Reading</button>
+			id="btn-stop-read">停止读（Stop Reading）</button>
 		<div style="font-size: 3em; border: 2px solid red">
-			Detected Count:<span id="detect-count">0</span>
+			检测到的标签总数（Detected Count）:<span id="detect-count">0</span>
 		</div>
-		<h3>Bad Tags with good EPC:</h3>
+		<h3>不良品（Bad Tags with good EPC）:</h3>
 		<div id="filepath"></div>
 		<hr>
 		<div id="badTags" class="container">
@@ -293,8 +333,8 @@
 		</div>
 
 		<div class="submit-btn">
-			<button onclick="submit()" class="btn btn-default">Submit
-				for QC data</button>
+			<button onclick="submit()" class="btn btn-default">导出数据（Submit
+				for QC data）</button>
 		</div>
 	</div>
 </body>
@@ -317,5 +357,18 @@
 	    $("#curTime").text(name + "-" + version + " @" + formattedTime);
 	
     });
+    
+    function goSetting(){
+    	
+    	var prompt = window.prompt('请输入管理员密码！')
+    	
+    	if(prompt != 'impinj'){
+    		alert("密码不正确！")
+    		return;
+    	}
+    		
+    	
+    	window.open('/config.html')
+    }
 </script>
 </html>
