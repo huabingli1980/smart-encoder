@@ -67,6 +67,7 @@ public class ReaderManager {
 	public static void disconnect() {
 		if (ReaderManager.reader != null) {
 			ReaderManager.reader.disconnect();
+			ReaderManager.reader.setReaderStopListener(null);
 		}
 	}
 }

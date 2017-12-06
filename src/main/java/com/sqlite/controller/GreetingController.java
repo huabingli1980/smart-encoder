@@ -57,6 +57,7 @@ public class GreetingController
     @ResponseBody
     public String startInspection(@RequestBody final InspectContext inspectContext) throws OctaneSdkException, FileNotFoundException, IOException {
         OIC.reset();
+        ReaderManager.disconnect();
         OIC.hasStarted = true;
         ApplicationConfig.load(inspectContext.getConfigName() + ".properties");
         ContextManager.addOrders(inspectContext.getOrders());
