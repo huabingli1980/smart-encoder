@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p %c{1} - %m%n" />
+		</layout>
+	</appender>
+
+	<appender name="bdfile" class="org.apache.log4j.RollingFileAppender">
+		<param name="append" value="false" />
+		<param name="maxFileSize" value="1GB" />
+		<param name="maxBackupIndex" value="2" />
+		<param name="file" value="/tmp/bd.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p %c{1} - %m%n" />
+		</layout>
+	</appender>
+
+	<logger name="org.apache.mina" additivity="false">
+		<level value="off" />
+		<appender-ref ref="console" />
+	</logger>
+
+	<!-- <category name="org.apache.mina">
+		<priority value="off" />
+		<appender-ref ref="console" />
+	</category> -->
+
+	<root>
+		<priority value="error" />
+		<appender-ref ref="bdfile" />
+		<appender-ref ref="console" />
+	</root>
+
+
+</log4j:configuration>
