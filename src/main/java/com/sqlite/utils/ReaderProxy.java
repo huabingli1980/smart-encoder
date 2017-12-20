@@ -27,6 +27,7 @@ import com.impinj.octane.Settings;
 import com.impinj.octane.Tag;
 import com.impinj.octane.TagReport;
 import com.impinj.octane.TagReportListener;
+import com.rsmart.Rx;
 import com.sqlite.domain.BasicTagInfoConsumer;
 import com.sqlite.domain.OIC;
 
@@ -79,39 +80,13 @@ public class ReaderProxy {
 			
 			@Override
 			public void onGpiChanged(ImpinjReader arg0, GpiEvent arg1) {
-				
-				int port = arg1.getPortNumber();
-				if(port == portRevolve && OIC.currentPassState == false){
-					OIC.revolveCountAfterPassLow++;
-				} else if (port == portPass){
-					boolean state = arg1.isState();
-					OIC.currentPassState = state;
-					
-					if(state){
-						try {
-							String s = ApplicationConfig.get("leading.pass.threshold", "15");
-							long delay = Long.valueOf(ApplicationConfig.get("delay", "0"));
-							final int leadingPassThreshold = Integer.valueOf(s);
-							OIC.isLeading = OIC.revolveCountAfterPassLow > leadingPassThreshold;
-							if(reader.queryStatus().getIsSingulating()){
-								reader.stop();
-							} else {
-								if(delay>0){
-									try {
-										Thread.sleep(delay);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-									}
-								}
-								reader.start();
-							}
-						} catch (OctaneSdkException e) {
-							e.printStackTrace();
-						}
-					}
+
+				if(arg1.isState()){
+					new Rx().start();
 				}
 			}
 		});
+		
 		
 		reader.setReaderStartListener(new ReaderStartListener() {
 			

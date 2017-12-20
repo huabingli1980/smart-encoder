@@ -1,7 +1,3 @@
-// 
-// Decompiled by Procyon v0.5.30
-// 
-
 package com.rsmart;
 
 import java.util.ArrayList;
@@ -50,7 +46,9 @@ import com.sqlite.utils.ReaderManager;
 
 import boot.ApplicationConfig;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SimpleReader implements IReader {
+	private static final int WRITE_DURATION = 220;
 	ImpinjReader reader;
 	Settings settings;
 	
@@ -74,44 +72,57 @@ public class SimpleReader implements IReader {
 
 			@Override
 			public void onDone(List<Tag> tags) {
+				int size = tags.size();
+				if(size != 1){
+					if(!deferred.isRejected()){
+						deferred.reject("tag target count does not equals one!");
+					}
+					
+					return;
+				}
+				
 				try {
 					Settings settings = reader.queryDefaultSettings();
 					reader.setReaderStopListener(null);
+					
+					final AntennaConfigGroup ac = settings.getAntennas();
+					ac.disableAll();
+
+					final Short antennaPort = Short.valueOf(ApplicationConfig.get("detect.ant", "1"));
+					AntennaConfig antenna;
+					try {
+						antenna = ac.getAntenna(antennaPort);
+					} catch (OctaneSdkException e) {
+						throw new RuntimeException("Reader Exception", e);
+					}
+					
+					antenna.setEnabled(true);
+					antenna.setIsMaxTxPower(false);
+					antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "60")));
+					antenna.setIsMaxRxSensitivity(false);
+					antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-35")));
+					
 					reader.applySettings(settings);
 				} catch (OctaneSdkException e1) {
-					
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-				int size = tags.size();
-				if(size != 1){
-					// reduce the transmition power and receive sensitivity 
-					// and read again
-					deferred.reject("Got multiple tags, which one to choose?");
-					return;
+					throw new RuntimeException("Someting went wrong when setting up reading!", e1);
 				}
 				
 				Tag tag = tags.get(0);
 				short currentPC = tag.getPcBits();
 				String currentEpc = tag.getEpc().toHexString();
-				
 			
 				if ((currentEpc.length() % 4 != 0) || (newEpc.length() % 4 != 0)) {
-					deferred.reject("EPCs must be a multiple of 16- bits");
+					if(!deferred.isRejected()){
+						deferred.reject("EPCs must be a multiple of 16- bits");
+					}
 		            return;
 		        }
 
-		       /* if (outstanding > 0) {
-		            return;
-		        }*/
-
-		        System.out.println("Programming Tag ");
-		        System.out.println("   EPC " + currentEpc + " to " + newEpc);
+		        System.out.println("Programming Tag from EPC " + currentEpc + " to " + newEpc);
 
 		        TagOpSequence seq = new TagOpSequence();
 		        seq.setOps(new ArrayList<TagOp>());
-		        seq.setExecutionCount((short) 1); // delete after one time
+		        seq.setExecutionCount((short) 1);
 		        seq.setState(SequenceState.Active);
 		        seq.setId(opSpecID++);
 
@@ -127,24 +138,19 @@ public class SimpleReader implements IReader {
 		        try {
 					epcWrite.setData(TagData.fromHexString(newEpc));
 				} catch (OctaneSdkException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					throw new RuntimeException("Invalid format of new EPC!" + newEpc, e);
 				}
 
-		        // add to the list
 		        seq.getOps().add(epcWrite);
 
 		        // have to program the PC bits if these are not the same
 		        if (currentEpc.length() != newEpc.length()) {
-		            // keep other PC bits the same.
 		            String currentPCString = PcBits.toHexString(currentPC);
 
-		            short newPC = PcBits.AdjustPcBits(currentPC,
-		                    (short) (newEpc.length() / 4));
+		            short newPC = PcBits.AdjustPcBits(currentPC, (short) (newEpc.length() / 4));
 		            String newPCString = PcBits.toHexString(newPC);
 
-		            System.out.println("   PC bits to establish new length: "
-		                    + newPCString + " " + currentPCString);
+		            System.out.println("PC bits to establish new length: " + newPCString + " " + currentPCString);
 
 		            TagWriteOp pcWrite = new TagWriteOp();
 		            pcWrite.Id = PC_BITS_OP_ID;
@@ -154,22 +160,23 @@ public class SimpleReader implements IReader {
 		            try {
 						pcWrite.setData(TagData.fromHexString(newPCString));
 					} catch (OctaneSdkException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						throw new RuntimeException("Invalid format of new EPC!" + newPCString, e);
 					}
+		            
 		            seq.getOps().add(pcWrite);
 		        }
 
-		        outstanding++;
 		        try {
 		        	reader.setTagOpCompleteListener(new TagOpCompleteListener() {
 						
 						@Override
 						public void onTagOpComplete(ImpinjReader arg0, TagOpReport results) {
-							// TODO Auto-generated method stub
-							 System.out.println("TagOpComplete: ");
+							 	System.out.println("TagOpComplete: ");
+							 	
 						        for (TagOpResult t : results.getResults()) {
-						            System.out.print("  EPC: " + t.getTag().getEpc().toHexString());
+						            String hexString = t.getTag().getEpc().toHexString();
+									System.out.print("EPC: " + hexString);
+									
 						            if (t instanceof TagWriteOpResult) {
 						                TagWriteOpResult tr = (TagWriteOpResult) t;
 						                	
@@ -179,37 +186,38 @@ public class SimpleReader implements IReader {
 						                    System.out.print("  Write to PC Complete: ");
 						                }
 						                
-						                deferred.resolve("done");
-						                System.out.println(" result: " + tr.getResult().toString()
-						                        + " words_written: " + tr.getNumWordsWritten());
+						                deferred.resolve(hexString);
+						                System.out.println(" result: " + tr.getResult().toString() + " words_written: " + tr.getNumWordsWritten());
 						                outstanding--;
 						            }
-						        }
+						       }
 						}
 					});
+		        	
 					reader.addOpSequence(seq);
-					
 					
 					if(reader.queryStatus().getIsSingulating()){
 						reader.stop();
 					}
+					
 					reader.start();
-					Thread.sleep(280);
-				} catch (OctaneSdkException | InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					
+					Thread.sleep(WRITE_DURATION);
+				} catch (OctaneSdkException e) {
+					throw new RuntimeException("Someting went wrong when starting the reader!", e);
+				} catch (InterruptedException e) {
+					throw new RuntimeException("Sleep thread is interrupted!", e);
 				}
 			}
+			
 		}).fail(new FailCallback<String>() {
 
 			@Override
-			public void onFail(String arg0) {
-				// TODO Auto-generated method stub
-				deferred.reject(arg0);
+			public void onFail(String errorCode) {
+				deferred.reject(errorCode);
 			}
 		});
 		 
-		
 		return promise;
 	}
 
@@ -230,6 +238,7 @@ public class SimpleReader implements IReader {
 		return null;
 	}
 
+	
 	@Override
 	public Promise readEpc() throws RuntimeException {
 		final Deferred deferred = new DeferredObject();
@@ -246,13 +255,15 @@ public class SimpleReader implements IReader {
 		try {
 			antenna = ac.getAntenna(antennaPort);
 		} catch (OctaneSdkException e) {
-			throw new RuntimeException("Reader Exception", (Throwable) e);
+			throw new RuntimeException("Reader Exception", e);
 		}
+		
 		antenna.setEnabled(true);
 		antenna.setIsMaxTxPower(false);
-		antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "30")));
-		//antenna.setIsMaxRxSensitivity(false);
-		//antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-30")));
+		antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "12")));
+		antenna.setIsMaxRxSensitivity(false);
+		antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-35")));
+		
 		final ReportConfig report = this.settings.getReport();
 		report.setIncludeFastId(true);
 		report.setIncludePcBits(true);
@@ -267,27 +278,40 @@ public class SimpleReader implements IReader {
 				
 				System.out.println("stopping ....");
 				if (tags.size() == 0) {
-					deferred.reject("EXCEPTION_EMPTY");
+					
+					if(!deferred.isResolved()){
+						deferred.reject("EXCEPTION_NO_TAG");
+					}
+					
+				} else if (tags.size() > 1){
+					
+					if(!deferred.isResolved()){
+						deferred.reject("EXCEPTION_MULTIPLE_TAGS");
+					}
+					
 				} else {
-					deferred.resolve(tags);
+					
+					if(!deferred.isResolved()){
+						deferred.resolve(tags);
+					}
 				}
-				
-				
 			}
 		});
 		
 		this.reader.setTagReportListener(new TagReportListener() {
 			
 			@Override
-			public void onTagReported(ImpinjReader arg0, TagReport arg1) {
+			public void onTagReported(ImpinjReader arg0, TagReport tagReport) {
 				tags.clear();
-				tags.addAll(arg1.getTags());
+				tags.addAll(tagReport.getTags());
 			}
+			
 		});
 		
 		final AutoStartConfig autoStartConfig = new AutoStartConfig();
 		autoStartConfig.setMode(AutoStartMode.Immediate);
 		this.settings.setAutoStart(autoStartConfig);
+		
 		try {
 			this.reader.applySettings(this.settings);
 		} catch (OctaneSdkException e2) {

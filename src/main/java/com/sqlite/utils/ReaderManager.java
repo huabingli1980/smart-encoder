@@ -5,11 +5,12 @@ import com.impinj.octane.OctaneSdkException;
 
 import boot.ApplicationConfig;
 
+//10.0.0.89
 public class ReaderManager {
 	private static ImpinjReader reader;
 
 	public static ImpinjReader getReader() {
-		final String hostname = ApplicationConfig.get("host", "10.0.0.89");
+		final String hostname = ApplicationConfig.get("host", "169.254.1.2");
 		if (ReaderManager.reader != null) {
 			if (!ReaderManager.reader.isConnected()) {
 				try {

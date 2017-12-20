@@ -18,13 +18,16 @@ class BarcodeListener implements SerialPortDataListener {
 	}
 
 	public void serialEvent(final SerialPortEvent event) {
-		if (event.getEventType() != 1) {
+		
+		
+		/*if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_RECEIVED) {
 			return;
-		}
+		}*/
 
 		final byte[] newData = new byte[this.comPort.bytesAvailable()];
 		final int numRead = this.comPort.readBytes(newData, (long) newData.length);
 		final String dataStr = new String(newData);
+		//System.out.println(dataStr);
 		if (numRead <= 6) {
 			this.mdeferred.onReadFailed();
 		} else {
