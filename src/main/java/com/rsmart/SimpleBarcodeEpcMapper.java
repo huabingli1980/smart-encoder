@@ -31,7 +31,8 @@ public class SimpleBarcodeEpcMapper implements IBarcodeEpcMappable
     
     @Override
     public String barcodeToEpc(final String barcode) {
-        String testdata = "00B07A135403A988" + String.valueOf(System.currentTimeMillis()).substring(0, 8);
+        String valueOf = String.valueOf(System.currentTimeMillis()+54321);
+		String testdata = "00B07A135403A988" + valueOf.substring(valueOf.length()-8);
         System.out.println("data: " + testdata);
 		return testdata;
     }

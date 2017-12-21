@@ -9,6 +9,7 @@ import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
 import org.jdeferred.Promise;
 import org.jdeferred.impl.DeferredObject;
+import org.springframework.util.SystemPropertyUtils;
 
 import com.impinj.octane.AntennaConfig;
 import com.impinj.octane.AntennaConfigGroup;
@@ -36,6 +37,7 @@ import com.impinj.octane.TagOpCompleteListener;
 import com.impinj.octane.TagOpReport;
 import com.impinj.octane.TagOpResult;
 import com.impinj.octane.TagOpSequence;
+import com.impinj.octane.TagReadOp;
 import com.impinj.octane.TagReport;
 import com.impinj.octane.TagReportListener;
 import com.impinj.octane.TagWriteOp;
@@ -48,7 +50,7 @@ import boot.ApplicationConfig;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class SimpleReader implements IReader {
-	private static final int WRITE_DURATION = 220;
+	private static final int WRITE_DURATION = 135;
 	ImpinjReader reader;
 	Settings settings;
 	
@@ -68,6 +70,8 @@ public class SimpleReader implements IReader {
 		final Deferred deferred = new DeferredObject();
 		final Promise promise = deferred.promise();
 		
+		//writeIt(newEpc, deferred, (short)1, "00B07A135403A98815137878");
+		long readStart = System.currentTimeMillis();
 		readEpc().done(new DoneCallback<List<Tag>>() {
 
 			@Override
@@ -81,133 +85,13 @@ public class SimpleReader implements IReader {
 					return;
 				}
 				
-				try {
-					Settings settings = reader.queryDefaultSettings();
-					reader.setReaderStopListener(null);
-					
-					final AntennaConfigGroup ac = settings.getAntennas();
-					ac.disableAll();
-
-					final Short antennaPort = Short.valueOf(ApplicationConfig.get("detect.ant", "1"));
-					AntennaConfig antenna;
-					try {
-						antenna = ac.getAntenna(antennaPort);
-					} catch (OctaneSdkException e) {
-						throw new RuntimeException("Reader Exception", e);
-					}
-					
-					antenna.setEnabled(true);
-					antenna.setIsMaxTxPower(false);
-					antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "60")));
-					antenna.setIsMaxRxSensitivity(false);
-					antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-35")));
-					
-					reader.applySettings(settings);
-				} catch (OctaneSdkException e1) {
-					throw new RuntimeException("Someting went wrong when setting up reading!", e1);
-				}
-				
 				Tag tag = tags.get(0);
 				short currentPC = tag.getPcBits();
 				String currentEpc = tag.getEpc().toHexString();
-			
-				if ((currentEpc.length() % 4 != 0) || (newEpc.length() % 4 != 0)) {
-					if(!deferred.isRejected()){
-						deferred.reject("EPCs must be a multiple of 16- bits");
-					}
-		            return;
-		        }
-
-		        System.out.println("Programming Tag from EPC " + currentEpc + " to " + newEpc);
-
-		        TagOpSequence seq = new TagOpSequence();
-		        seq.setOps(new ArrayList<TagOp>());
-		        seq.setExecutionCount((short) 1);
-		        seq.setState(SequenceState.Active);
-		        seq.setId(opSpecID++);
-
-		        seq.setTargetTag(new TargetTag());
-		        seq.getTargetTag().setBitPointer(BitPointers.Epc);
-		        seq.getTargetTag().setMemoryBank(MemoryBank.Epc);
-		        seq.getTargetTag().setData(currentEpc);
-
-		        TagWriteOp epcWrite = new TagWriteOp();
-		        epcWrite.Id = EPC_OP_ID;
-		        epcWrite.setMemoryBank(MemoryBank.Epc);
-		        epcWrite.setWordPointer(WordPointers.Epc);
-		        try {
-					epcWrite.setData(TagData.fromHexString(newEpc));
-				} catch (OctaneSdkException e) {
-					throw new RuntimeException("Invalid format of new EPC!" + newEpc, e);
-				}
-
-		        seq.getOps().add(epcWrite);
-
-		        // have to program the PC bits if these are not the same
-		        if (currentEpc.length() != newEpc.length()) {
-		            String currentPCString = PcBits.toHexString(currentPC);
-
-		            short newPC = PcBits.AdjustPcBits(currentPC, (short) (newEpc.length() / 4));
-		            String newPCString = PcBits.toHexString(newPC);
-
-		            System.out.println("PC bits to establish new length: " + newPCString + " " + currentPCString);
-
-		            TagWriteOp pcWrite = new TagWriteOp();
-		            pcWrite.Id = PC_BITS_OP_ID;
-		            pcWrite.setMemoryBank(MemoryBank.Epc);
-		            pcWrite.setWordPointer(WordPointers.PcBits);
-
-		            try {
-						pcWrite.setData(TagData.fromHexString(newPCString));
-					} catch (OctaneSdkException e) {
-						throw new RuntimeException("Invalid format of new EPC!" + newPCString, e);
-					}
-		            
-		            seq.getOps().add(pcWrite);
-		        }
-
-		        try {
-		        	reader.setTagOpCompleteListener(new TagOpCompleteListener() {
-						
-						@Override
-						public void onTagOpComplete(ImpinjReader arg0, TagOpReport results) {
-							 	System.out.println("TagOpComplete: ");
-							 	
-						        for (TagOpResult t : results.getResults()) {
-						            String hexString = t.getTag().getEpc().toHexString();
-									System.out.print("EPC: " + hexString);
-									
-						            if (t instanceof TagWriteOpResult) {
-						                TagWriteOpResult tr = (TagWriteOpResult) t;
-						                	
-						                if (tr.getOpId() == EPC_OP_ID) {
-						                    System.out.print("  Write to EPC Complete: ");
-						                } else if (tr.getOpId() == PC_BITS_OP_ID) {
-						                    System.out.print("  Write to PC Complete: ");
-						                }
-						                
-						                deferred.resolve(hexString);
-						                System.out.println(" result: " + tr.getResult().toString() + " words_written: " + tr.getNumWordsWritten());
-						                outstanding--;
-						            }
-						       }
-						}
-					});
-		        	
-					reader.addOpSequence(seq);
-					
-					if(reader.queryStatus().getIsSingulating()){
-						reader.stop();
-					}
-					
-					reader.start();
-					
-					Thread.sleep(WRITE_DURATION);
-				} catch (OctaneSdkException e) {
-					throw new RuntimeException("Someting went wrong when starting the reader!", e);
-				} catch (InterruptedException e) {
-					throw new RuntimeException("Sleep thread is interrupted!", e);
-				}
+				
+				System.out.println("Read EPC - " + currentEpc + " within " + (System.currentTimeMillis() - readStart) + " ms");
+				
+				writeIt(newEpc, deferred, currentPC, currentEpc);
 			}
 			
 		}).fail(new FailCallback<String>() {
@@ -220,7 +104,141 @@ public class SimpleReader implements IReader {
 		 
 		return promise;
 	}
+	
+	private void writeIt(final String newEpc, final Deferred deferred, short currentPC, String currentEpc) {
+		
+		long settingStart = System.currentTimeMillis();
+		try {
+			Settings settings = reader.queryDefaultSettings();
+			reader.setReaderStopListener(null);
+			
+			final AntennaConfigGroup ac = settings.getAntennas();
+			ac.disableAll();
 
+			final Short antennaPort = Short.valueOf(ApplicationConfig.get("detect.ant", "1"));
+			AntennaConfig antenna;
+			try {
+				antenna = ac.getAntenna(antennaPort);
+			} catch (OctaneSdkException e) {
+				throw new RuntimeException("Reader Exception", e);
+			}
+			
+			antenna.setEnabled(true);
+			antenna.setIsMaxTxPower(false);
+			antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "30")));
+			antenna.setIsMaxRxSensitivity(false);
+			antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-35")));
+			
+			reader.applySettings(settings);
+		} catch (OctaneSdkException e1) {
+			throw new RuntimeException("Someting went wrong when setting up reading!", e1);
+		}
+		
+		System.out.println("Settings updated within " + (System.currentTimeMillis() - settingStart) + " ms");
+		
+		
+	
+		if ((currentEpc.length() % 4 != 0) || (newEpc.length() % 4 != 0)) {
+			if(!deferred.isRejected()){
+				deferred.reject("EPCs must be a multiple of 16- bits");
+			}
+            return;
+        }
+
+        TagOpSequence seq = new TagOpSequence();
+        seq.setOps(new ArrayList<TagOp>());
+        seq.setExecutionCount((short) 1);
+        seq.setState(SequenceState.Active);
+        seq.setId(opSpecID++);
+
+        seq.setTargetTag(new TargetTag());
+        seq.getTargetTag().setBitPointer(BitPointers.Epc);
+        seq.getTargetTag().setMemoryBank(MemoryBank.Epc);
+        seq.getTargetTag().setData(currentEpc);
+        
+        /*TagReadOp tagReadOp = new TagReadOp();
+        tagReadOp.setMemoryBank(MemoryBank.Epc);
+        tagReadOp.setWordPointer(WordPointers.Epc);*/
+        
+        TagWriteOp epcWrite = new TagWriteOp();
+        epcWrite.Id = EPC_OP_ID;
+        epcWrite.setMemoryBank(MemoryBank.Epc);
+        epcWrite.setWordPointer(WordPointers.Epc);
+        try {
+			epcWrite.setData(TagData.fromHexString(newEpc));
+		} catch (OctaneSdkException e) {
+			throw new RuntimeException("Invalid format of new EPC!" + newEpc, e);
+		}
+
+        seq.getOps().add(epcWrite);
+
+        //checkOrUpdatePc(newEpc, currentPC, currentEpc, seq);
+
+        try {
+        	reader.setTagOpCompleteListener(new TagOpCompleteListener() {
+				
+				@Override
+				public void onTagOpComplete(ImpinjReader arg0, TagOpReport results) {
+					 	
+				        for (TagOpResult t : results.getResults()) {
+				            String hexString = t.getTag().getEpc().toHexString();
+							
+				            if (t instanceof TagWriteOpResult) {
+				                TagWriteOpResult tr = (TagWriteOpResult) t;
+				                	
+				                if (tr.getOpId() == EPC_OP_ID) {
+				                	
+				                } else if (tr.getOpId() == PC_BITS_OP_ID) {
+				                    System.out.print("  Write to PC Complete: ");
+				                }
+				                
+				                deferred.resolve(newEpc);
+				            }
+				       }
+				}
+			});
+        	
+			reader.addOpSequence(seq);
+			
+			if(reader.queryStatus().getIsSingulating()){
+				reader.stop();
+			} else {
+				reader.start();
+			}
+			
+			Thread.sleep(WRITE_DURATION);
+		} catch (OctaneSdkException e) {
+			throw new RuntimeException("Someting went wrong when  the reader!", e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Sleep thread is interrupted!", e);
+		}
+	}
+
+	private void checkOrUpdatePc(final String newEpc, short currentPC, String currentEpc, TagOpSequence seq) {
+		// have to program the PC bits if these are not the same
+        if (currentEpc.length() != newEpc.length()) {
+            String currentPCString = PcBits.toHexString(currentPC);
+
+            short newPC = PcBits.AdjustPcBits(currentPC, (short) (newEpc.length() / 4));
+            String newPCString = PcBits.toHexString(newPC);
+
+            System.out.println("PC bits to establish new length: " + newPCString + " " + currentPCString);
+
+            TagWriteOp pcWrite = new TagWriteOp();
+            pcWrite.Id = PC_BITS_OP_ID;
+            pcWrite.setMemoryBank(MemoryBank.Epc);
+            pcWrite.setWordPointer(WordPointers.PcBits);
+
+            try {
+				pcWrite.setData(TagData.fromHexString(newPCString));
+			} catch (OctaneSdkException e) {
+				throw new RuntimeException("Invalid format of new EPC!" + newPCString, e);
+			}
+            
+            seq.getOps().add(pcWrite);
+        }
+	}
+	
 	@Override
 	public Promise readMargin(final String epc) {
 		final Deferred deferred = new DeferredObject();
@@ -244,7 +262,7 @@ public class SimpleReader implements IReader {
 		final Deferred deferred = new DeferredObject();
 		final Promise promise = deferred.promise();
 
-		this.settings.setSearchMode(SearchMode.SingleTarget);
+		this.settings.setSearchMode(SearchMode.DualTarget);
 		this.settings.setTagPopulationEstimate(1);
 		this.settings.setSession(1);
 		final AntennaConfigGroup ac = this.settings.getAntennas();
@@ -262,12 +280,12 @@ public class SimpleReader implements IReader {
 		antenna.setIsMaxTxPower(false);
 		antenna.setTxPowerinDbm((double) Short.valueOf(ApplicationConfig.get("detect.power", "12")));
 		antenna.setIsMaxRxSensitivity(false);
-		antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-35")));
+		antenna.setRxSensitivityinDbm((double) Short.valueOf(ApplicationConfig.get("receive.sensitivity", "-30")));
 		
 		final ReportConfig report = this.settings.getReport();
-		report.setIncludeFastId(true);
-		report.setIncludePcBits(true);
-		report.setIncludeAntennaPortNumber(true);
+		//report.setIncludeFastId(true);
+		//report.setIncludePcBits(true);
+		//report.setIncludeAntennaPortNumber(true);
 		report.setMode(ReportMode.BatchAfterStop);
 		
 		final List<Tag> tags = new ArrayList<Tag>();
@@ -276,7 +294,6 @@ public class SimpleReader implements IReader {
 			@Override
 			public void onReaderStop(ImpinjReader arg0, ReaderStopEvent arg1) {
 				
-				System.out.println("stopping ....");
 				if (tags.size() == 0) {
 					
 					if(!deferred.isResolved()){

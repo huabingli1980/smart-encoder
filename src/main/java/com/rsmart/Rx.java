@@ -4,18 +4,38 @@ import java.util.List;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
+import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.impinj.octane.Tag;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 public class Rx {
 
 	private static final int sleepTimeBeforeBarcodeReading = 200;
-	private static final int sleepTimeBeforeEpcWriting = 50;
+	private static final int sleepTimeBeforeEpcWriting = 0;
 	public static void main(String[] args) {
+		Logger minaLogger = (Logger) LoggerFactory.getLogger("org.apache.mina");
+		if (minaLogger != null) {
+			minaLogger.setLevel(Level.WARN);
+		}
 		new Rx().start();
 	}
 	
+	@Test
+	public void testWrite(){
+		Logger minaLogger = (Logger) LoggerFactory.getLogger("org.apache.mina");
+		if (minaLogger != null) {
+			minaLogger.setLevel(Level.WARN);
+		}
+		
+		new Rx().start();
+	}
+	
+	@SuppressWarnings("unchecked")
 	public void start() {
 		IBarcodeEpcMappable mapper = new SimpleBarcodeEpcMapper();
 		final IReader rd = new SimpleReader();
@@ -23,18 +43,19 @@ public class Rx {
 		//System.out.println("Barcode ... " + barcode);
 		final String epcToWrite = mapper.barcodeToEpc("");
 		if (true && cv.validate(epcToWrite)) {
-			System.out.println("validating ... ");
-			try {
+			//System.out.println("validating ... ");
+			/*try {
 				Thread.sleep(sleepTimeBeforeEpcWriting);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-			}
+			}*/
+			long start = System.currentTimeMillis();
 			rd.writeEpc(epcToWrite).done(new DoneCallback<String>() {
 
 				public void onDone(final String epc) {
-					System.out.println("Write done  with " + epc);
+					System.out.println("Write done with EPC - " + epc + " within " + (System.currentTimeMillis() - start) + " ms");
 					
-					rd.readEpc().done(new DoneCallback<List<Tag>>() {
+					/*rd.readEpc().done(new DoneCallback<List<Tag>>() {
 
 						@Override
 						public void onDone(List<Tag> result) {
@@ -71,7 +92,7 @@ public class Rx {
 							}
 						}
 						
-					});
+					});*/
 					
 				}
 			}).fail(new FailCallback<String>() {

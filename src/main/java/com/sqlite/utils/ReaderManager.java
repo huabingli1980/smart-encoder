@@ -10,7 +10,8 @@ public class ReaderManager {
 	private static ImpinjReader reader;
 
 	public static ImpinjReader getReader() {
-		final String hostname = ApplicationConfig.get("host", "169.254.1.2");
+		//final String hostname = ApplicationConfig.get("host", "169.254.1.2");
+		final String hostname = ApplicationConfig.get("host", "10.0.0.89");
 		if (ReaderManager.reader != null) {
 			if (!ReaderManager.reader.isConnected()) {
 				try {
