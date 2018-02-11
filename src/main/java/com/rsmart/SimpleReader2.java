@@ -25,7 +25,6 @@ import com.impinj.octane.ReportConfig;
 import com.impinj.octane.ReportMode;
 import com.impinj.octane.SearchMode;
 import com.impinj.octane.SequenceState;
-import com.impinj.octane.SequenceTriggerType;
 import com.impinj.octane.Settings;
 import com.impinj.octane.Tag;
 import com.impinj.octane.TagData;
@@ -50,7 +49,7 @@ import com.sqlite.utils.ReaderManager;
 import boot.ApplicationConfig;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SimpleReader implements IReader {
+public class SimpleReader2 implements IReader {
 	
 	private final class OpCompleteListener implements TagOpCompleteListener {
 		private final Deferred deferred;
@@ -70,16 +69,6 @@ public class SimpleReader implements IReader {
 					WriteResultStatus rl = res.getResult();
 					String resls = rl.name();
 					if(rl == WriteResultStatus.Success){
-						
-						if(res.getOpId() == EPC_OP_ID){
-							System.out.println("Write EPC Success");
-							System.out.println("Write done - " + System.currentTimeMillis());
-						} else if (res.getOpId() == ACCESSPWD_OP_ID){
-							System.out.println("Write PW Success");
-						} else {
-							
-						}
-						
 						c--;
 					} else{
 						if(res.getOpId() == EPC_OP_ID){
@@ -95,13 +84,10 @@ public class SimpleReader implements IReader {
 					TagLockOpResult res = (TagLockOpResult) tagOpResult;
 					LockResultStatus result = res.getResult();
 					if(result == LockResultStatus.Success){
-						System.out.println("Lock Success");
-						System.out.println("finish to lock - " + System.currentTimeMillis());
 						c--;
 					} else {
 						if(res.getOpId() == LOCK_OP_ID){
-							
-							mp.put("lockTag", result.name());
+							mp.put("writeEpc", result.name());
 						} else {
 							
 						}
@@ -142,7 +128,7 @@ public class SimpleReader implements IReader {
     static int opSpecID = 1;
     static int outstanding = 0;
 
-	public SimpleReader() throws Exception {
+	public SimpleReader2() throws Exception {
 		init();
 	}
 
@@ -159,14 +145,14 @@ public class SimpleReader implements IReader {
 		ac.disableAll();
 		AntennaConfig antenna = ac.getAntenna(workingAntPort);
 		antenna.setEnabled(true);
-		//antenna.setIsMaxTxPower(false);
-		//antenna.setTxPowerinDbm(35);
+		antenna.setIsMaxTxPower(false);
+		antenna.setTxPowerinDbm(13);
 		antenna.setIsMaxRxSensitivity(false);
 		antenna.setRxSensitivityinDbm(-30);
 		
 		final ReportConfig report = readSettings.getReport();
 		report.setMode(ReportMode.Individual);
-		report.setIncludeFastId(true);
+		
 		
 		writeSettings = reader.queryDefaultSettings();
 		AntennaConfigGroup writeA = writeSettings.getAntennas();
@@ -176,24 +162,8 @@ public class SimpleReader implements IReader {
 		wrantenna.setIsMaxRxSensitivity(false);
 		wrantenna.setRxSensitivityinDbm(-30);
 		
-		reader.setTagReportListener(new TagReportListener() {
-			
-			@Override
-			public void onTagReported(ImpinjReader arg0, TagReport tagReport) {
-				System.out.println("Read EPC taken - " + (System.currentTimeMillis() - start) + " ms!");
-				List<Tag> tags = tagReport.getTags();
-				int size = tags.size();
-				System.out.println("TID: " + tags.get(0).getTid().toHexString());
-				
-				String valueOf = String.valueOf(System.currentTimeMillis()+54321);
-				String epcToWrite = "00B07A135403A988" + valueOf.substring(valueOf.length() - 8);
-				writeMe(epcToWrite, tags.get(0));
-			}
-			
-		});
-
 		reader.applySettings(readSettings);
-		//reader.start();
+		reader.start();
 	}
 
 	@Override
@@ -215,9 +185,21 @@ public class SimpleReader implements IReader {
 			@Override
 			public void onDone(Tag tag) {
 				
-				writeMe(newEpc, tag);
-			}
+				//short currentPC = tag.getPcBits();
+				String currentEpc = tag.getEpc().toHexString();
+				
+				//System.out.println("Read EPC(" + currentEpc + ") within " + (System.currentTimeMillis() - readStart) + " ms");
+				
+				try {
+					//writeIt(newEpc, deferred, currentPC, currentEpc);
+					reader.setTagOpCompleteListener(new OpCompleteListener(deferred));
+					TagOpSequence seq = getSeq(newEpc, currentEpc);
+			        reader.addOpSequence(seq);
 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			
 		}).fail(new FailCallback<Result>() {
 
@@ -230,49 +212,9 @@ public class SimpleReader implements IReader {
 		return promise;
 	}
 	
-	private void writeMe2(final String newEpc, Tag tag) {
-		short currentPC = tag.getPcBits();
-		String currentEpc = tag.getEpc().toHexString();
-		String tid = tag.getTid().toHexString();
-		System.out.println("Tag id" + tag.getTid().toHexString());
-		//System.out.println("Read EPC(" + currentEpc + ") within " + (System.currentTimeMillis() - readStart) + " ms");
-		start = System.currentTimeMillis();
-		try {
-			System.out.println("Start to lock - " + System.currentTimeMillis());
-			writeIt(newEpc, currentPC, currentEpc, tid);
-			/*reader.setTagOpCompleteListener(new OpCompleteListener(deferred));
-			TagOpSequence seq = getSeq(newEpc, currentEpc);
-			
-	        reader.addOpSequence(seq);*/
-	       
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void writeMe(final String newEpc, Tag tag) {
-		short currentPC = tag.getPcBits();
-		String currentEpc = tag.getEpc().toHexString();
-		String tid = tag.getTid().toHexString();
-		System.out.println("Tag id" + tag.getTid().toHexString());
-		//System.out.println("Read EPC(" + currentEpc + ") within " + (System.currentTimeMillis() - readStart) + " ms");
-		start = System.currentTimeMillis();
-		try {
-			System.out.println("Start to lock - " + System.currentTimeMillis());
-			writeIt(newEpc, currentPC, currentEpc, tid);
-			/*reader.setTagOpCompleteListener(new OpCompleteListener(deferred));
-			TagOpSequence seq = getSeq(newEpc, currentEpc);
-			
-	        reader.addOpSequence(seq);*/
-	       
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void writeIt(
-			final String newEpc, short currentPC, String currentEpc, String tid) throws Exception {
+	private void writeIt(final String newEpc, final Deferred deferred, short currentPC, String currentEpc) throws Exception {
 		
+		//reader.applySettings(writeSettings);
 		
 		/*if ((currentEpc.length() % 4 != 0) || (newEpc.length() % 4 != 0)) {
 			if(!deferred.isRejected()){
@@ -281,73 +223,55 @@ public class SimpleReader implements IReader {
             return;
         }*/
 
-		/*reader.setTagOpCompleteListener(new OpCompleteListener(deferred));
-		reader.applySettings(writeSettings);*/
-		 
-        TagOpSequence seq = getSeq(newEpc, currentEpc, tid);
+		
+        TagOpSequence seq = getSeq(newEpc, currentEpc);
         reader.addOpSequence(seq);
+
+        reader.setTagOpCompleteListener(new OpCompleteListener(deferred));
         //checkOrUpdatePc(newEpc, currentPC, currentEpc, seq);
-        System.out.println("2Start to lock - " + System.currentTimeMillis());
-		/*reader.start();
-		reader.stop();*/
+
+    	
+        /*reader.stop();
+		reader.start();*/
 	}
 	
 	
 
-	private TagOpSequence getSeq(final String newEpc, String currentEpc, String tid) throws OctaneSdkException {
-		System.out.println("Using epc - " + currentEpc);
+	private TagOpSequence getSeq(final String newEpc, String currentEpc) throws OctaneSdkException {
 		TagOpSequence seq = new TagOpSequence();
         seq.setExecutionCount((short) 1);
         seq.setState(SequenceState.Active);
         seq.setId(opSpecID++);
-        //seq.setAntennaId(antennaId);
-        
-        // Use TID as target to search
-        TargetTag targetTag = new TargetTag();
-        targetTag.setMemoryBank(MemoryBank.Tid);
-        targetTag.setData(tid);
-		seq.setTargetTag(targetTag);
-        
-        List<TagOp> ops = seq.getOps();
-        
-        // 1. Write EPC
-        TagWriteOp writeEpcOp = getEpcWriteOp(newEpc);
-		ops.add(writeEpcOp);
-		
-		// Access password(initial one is "00000000")
-		TagData passWord = TagData.fromHexString("00000000");
-		
-		// 2. Write Access password
-		TagWriteOp accessPwdWrite = getAccessPasswordWriteOp(passWord);
-		ops.add(accessPwdWrite);
-		
-		// 3. Lock access password and permanently lock EPC
-		TagLockOp lockEpcOp = new TagLockOp();
-		lockEpcOp.Id = LOCK_OP_ID;
-		lockEpcOp.setAccessPassword(passWord);
-		lockEpcOp.setAccessPasswordLockType(TagLockState.Lock);
-        lockEpcOp.setEpcLockType(TagLockState.Permalock);
-		ops.add(lockEpcOp);
-		
-		return seq;
-	}
 
-	private TagWriteOp getAccessPasswordWriteOp(TagData passWord) {
-		TagWriteOp accessPwdWrite = new TagWriteOp();
-		accessPwdWrite.Id = ACCESSPWD_OP_ID;
-		accessPwdWrite.setMemoryBank(MemoryBank.Reserved);
-		accessPwdWrite.setWordPointer(WordPointers.AccessPassword);
-		accessPwdWrite.setData(passWord);
-		return accessPwdWrite;
-	}
-
-	private TagWriteOp getEpcWriteOp(final String newEpc) throws OctaneSdkException {
-		TagWriteOp epcWrite = new TagWriteOp();
+        seq.setTargetTag(new TargetTag());
+        seq.getTargetTag().setBitPointer(BitPointers.Epc);
+        seq.getTargetTag().setMemoryBank(MemoryBank.Epc);
+        seq.getTargetTag().setData(currentEpc);
+        
+        TagWriteOp epcWrite = new TagWriteOp();
         epcWrite.Id = EPC_OP_ID;
         epcWrite.setMemoryBank(MemoryBank.Epc);
         epcWrite.setWordPointer(WordPointers.Epc);
 		epcWrite.setData(TagData.fromHexString(newEpc));
-		return epcWrite;
+		
+		TagWriteOp accessPwdWrite = new TagWriteOp();
+		accessPwdWrite.Id = ACCESSPWD_OP_ID;
+		accessPwdWrite.setMemoryBank(MemoryBank.Reserved);
+		accessPwdWrite.setWordPointer(WordPointers.AccessPassword);
+		TagData passWord = TagData.fromByteArray("hell".getBytes());
+		accessPwdWrite.setData(passWord);
+		
+		TagLockOp tagLockOp = new TagLockOp();
+		tagLockOp.Id = LOCK_OP_ID;
+		tagLockOp.setAccessPassword(passWord);
+		tagLockOp.setAccessPasswordLockType(TagLockState.Lock);
+		
+        List<TagOp> ops = seq.getOps();
+		ops.add(epcWrite);
+		ops.add(accessPwdWrite);
+		ops.add(tagLockOp);
+		
+		return seq;
 	}
 
 	private void checkOrUpdatePc(final String newEpc, short currentPC, String currentEpc, TagOpSequence seq) {
@@ -394,7 +318,7 @@ public class SimpleReader implements IReader {
 	
 	@Override
 	public Promise readSingleEpc() throws Exception {
-		start = System.currentTimeMillis();
+		
 		final Deferred deferred = new DeferredObject();
 		
 		final Promise promise = deferred.promise();
@@ -402,10 +326,10 @@ public class SimpleReader implements IReader {
 			
 			@Override
 			public void onTagReported(ImpinjReader arg0, TagReport tagReport) {
-				System.out.println("Read EPC taken - " + (System.currentTimeMillis() - start) + " ms!");
+				start = System.currentTimeMillis();
+				System.out.println("Read taken - " + (System.currentTimeMillis() - start) + " ms!");
 				List<Tag> tags = tagReport.getTags();
 				int size = tags.size();
-				System.out.println("TID: " + tags.get(0).getTid().toHexString());
 				if (size != 1) {
 					
 					if(!deferred.isResolved()){
@@ -422,8 +346,8 @@ public class SimpleReader implements IReader {
 			
 		});
 		
-		reader.applySettings(readSettings);
-		reader.start();
+		//reader.applySettings(readSettings);
+		//reader.stop();
 		return promise;
 	}
 

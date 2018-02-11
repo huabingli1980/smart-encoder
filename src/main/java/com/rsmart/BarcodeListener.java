@@ -14,12 +14,12 @@ class BarcodeListener implements SerialPortDataListener {
 	}
 
 	public int getListeningEvents() {
-		return 1;
+		return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
 	}
 
 	public void serialEvent(final SerialPortEvent event) {
 		
-		
+		System.out.println("in....");
 		/*if (event.getEventType() != SerialPort.LISTENING_EVENT_DATA_RECEIVED) {
 			return;
 		}*/
@@ -31,7 +31,12 @@ class BarcodeListener implements SerialPortDataListener {
 		if (numRead <= 6) {
 			this.mdeferred.onReadFailed();
 		} else {
-			this.mdeferred.onSuccessData(dataStr);
+			try {
+				this.mdeferred.onSuccessData(dataStr);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

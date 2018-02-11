@@ -1,7 +1,3 @@
-// 
-// Decompiled by Procyon v0.5.30
-// 
-
 package com.rsmart;
 
 import java.util.HashMap;
@@ -33,7 +29,6 @@ public class SimpleBarcodeEpcMapper implements IBarcodeEpcMappable
     public String barcodeToEpc(final String barcode) {
         String valueOf = String.valueOf(System.currentTimeMillis()+54321);
 		String testdata = "00B07A135403A988" + valueOf.substring(valueOf.length()-8);
-        System.out.println("data: " + testdata);
 		return testdata;
     }
 }

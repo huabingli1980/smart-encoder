@@ -6,5 +6,5 @@ package com.rsmart;
 
 public interface IContentValidate
 {
-    boolean validate(final String p0);
+    boolean check(final String p0);
 }

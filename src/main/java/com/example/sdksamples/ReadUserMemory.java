@@ -19,7 +19,7 @@ public class ReadUserMemory {
 
     public static void main(String[] args) {
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"
@@ -46,12 +46,12 @@ public class ReadUserMemory {
             seq.setExecutionCount((short) 0); // forever
             seq.setState(SequenceState.Active);
             seq.setId(1);
-
+    
             TagReadOp readOp = new TagReadOp();
-            readOp.setMemoryBank(MemoryBank.User);
+            readOp.setMemoryBank(MemoryBank.Reserved);
             readOp.setWordCount((short) 2);
             readOp.setWordPointer((short) 0);
-
+  
             // add to the list
             seq.getOps().add(readOp);
 

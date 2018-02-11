@@ -12,7 +12,8 @@ package com.example.sdksamples;
  */
 public class SampleProperties {
 
-    public static String hostname = "10.0.0.89";
+    //public static String hostname = "10.0.0.89";
+    public static String hostname = "169.254.1.1";
     public static String targetTag = "targetTag";
     public static String qtMode = "qtMode";
     public static String powerDbm = "powerdBm";

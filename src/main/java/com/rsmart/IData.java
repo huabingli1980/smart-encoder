@@ -6,7 +6,7 @@ package com.rsmart;
 
 public interface IData
 {
-    void onSuccessData(final String p0);
+    void onSuccessData(final String p0) throws Exception;
     
     void onReadFailed();
 }

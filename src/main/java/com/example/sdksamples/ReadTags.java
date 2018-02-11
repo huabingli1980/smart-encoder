@@ -16,7 +16,7 @@ public class ReadTags {
     public static void main(String[] args) {
 
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"
@@ -39,7 +39,7 @@ public class ReadTags {
             // The following mode, AutoSetDenseReader, monitors RF noise and interference and then automatically
             // and continuously optimizes the reader's configuration
             settings.setReaderMode(ReaderMode.AutoSetDenseReader);
-
+            settings.setSession(3);
             // set some special settings for antenna 1
             AntennaConfigGroup antennas = settings.getAntennas();
             antennas.disableAll();

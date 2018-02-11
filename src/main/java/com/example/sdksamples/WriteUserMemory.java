@@ -20,7 +20,7 @@ public class WriteUserMemory {
 
     public static void main(String[] args) {
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"
@@ -44,14 +44,14 @@ public class WriteUserMemory {
             // create the reader op sequence
             TagOpSequence seq = new TagOpSequence();
             seq.setOps(new ArrayList<TagOp>());
-            seq.setExecutionCount((short) 0); // forever
+            seq.setExecutionCount((short) 1); // forever
             seq.setState(SequenceState.Active);
             seq.setId(1);
 
             TagWriteOp writeOp = new TagWriteOp();
             writeOp.setMemoryBank(MemoryBank.User);
             writeOp.setWordPointer((short) 0);
-            writeOp.setData(TagData.fromHexString("abcd0123"));
+            writeOp.setData(TagData.fromHexString("abcd"));
 
             // add to the list
             seq.getOps().add(writeOp);
@@ -59,16 +59,10 @@ public class WriteUserMemory {
             // Use target tag to only apply to some EPCs
             String targetEpc = System.getProperty(SampleProperties.targetTag);
 
-            if (targetEpc != null) {
-                seq.setTargetTag(new TargetTag());
-                seq.getTargetTag().setBitPointer(BitPointers.Epc);
-                seq.getTargetTag().setMemoryBank(MemoryBank.Epc);
-                seq.getTargetTag().setData(targetEpc);
-            } else {
+           
                 // or just send NULL to apply to all tags
                 seq.setTargetTag(null);
-            }
-
+           
             // add to the reader. The reader supports multiple sequences
             reader.addOpSequence(seq);
 

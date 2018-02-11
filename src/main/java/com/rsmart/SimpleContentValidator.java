@@ -7,7 +7,7 @@ package com.rsmart;
 public class SimpleContentValidator implements IContentValidate
 {
     @Override
-    public boolean validate(final String epc) {
+    public boolean check(final String epc) {
         return true;
     }
 }

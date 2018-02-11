@@ -9,13 +9,13 @@ import org.jdeferred.Promise;
 
 public interface IReader
 {
-    Promise readEpc() throws RuntimeException;
+    Promise readSingleEpc() throws Exception;
     
     void readPeriodically(final long p0, final TagReportListener p1);
     
     Promise readBlock();
     
-    Promise writeEpc(final String p0);
+    Promise writeEpc(final String p0) throws Exception;
     
     Promise writeUserMemory(final String p0);
     

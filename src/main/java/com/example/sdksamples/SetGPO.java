@@ -11,7 +11,7 @@ public class SetGPO {
     public static void main(String[] args) {
 
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"
@@ -22,18 +22,16 @@ public class SetGPO {
 
             reader.connect(hostname);
 
-            Settings settings = reader.queryDefaultSettings();
-            reader.applySettings(settings);
+            //Settings settings = reader.queryDefaultSettings();
+            //reader.applySettings(settings);
 
             System.out.println("Setting general purpose outputs");
 
-            for (int i = 1; i <= 4; i++) {
-                reader.setGpo(i, true);
+            for (int i = 0; i < 100; i++) {
+            	reader.setGpo(2, true);
                 Thread.sleep(1500);
-                reader.setGpo(i, false);
-            }
-
-            System.out.println("Press enter to exit.");
+                reader.setGpo(2, false);
+			}
             Scanner s = new Scanner(System.in);
             s.nextLine();
 

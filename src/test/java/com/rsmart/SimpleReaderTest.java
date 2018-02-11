@@ -16,7 +16,7 @@ import ch.qos.logback.core.net.SyslogOutputStream;
 public class SimpleReaderTest {
 
 	@Test
-	public void test_writeEpc() {
+	public void test_writeEpc() throws Exception {
 		IReader reader = new SimpleReader();
 		reader.writeEpc("00B07A135403A9880806C38B").done(new DoneCallback<String>() {
 
@@ -36,16 +36,15 @@ public class SimpleReaderTest {
 	}
 	
 	@Test
-	public void test_readEpc(){
+	public void test_readEpc() throws Exception{
 		IReader reader = new SimpleReader();
-		reader.readEpc().done(new DoneCallback<List<Tag>>() {
+		reader.readSingleEpc().done(new DoneCallback<Tag>() {
 
 			@Override
-			public void onDone(List<Tag> arg0) {
+			public void onDone(Tag arg0) {
 			    System.out.println("done ...");
-				for (Tag tag : arg0) {
-					System.out.println(tag.getEpc().toHexString());
-				}
+			    System.out.println(tag.getEpc().toHexString());
+				
 			}
 		}).fail(new FailCallback<String>() {
 

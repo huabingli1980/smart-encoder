@@ -14,7 +14,7 @@ public class OptimizedRead {
     public static void main(String[] args) {
 
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"

@@ -8,14 +8,15 @@ import com.impinj.octane.ReaderMode;
 import com.impinj.octane.ReportMode;
 import com.impinj.octane.SearchMode;
 import com.impinj.octane.Settings;
+import com.rsmart.ReaderM;
 
 
 public class ReaderEvents {
 
     public static void main(String[] args) {
-
+    	ReaderM.disableLog();
         try {
-            String hostname = System.getProperty(SampleProperties.hostname);
+            String hostname = SampleProperties.hostname;
 
             if (hostname == null) {
                 throw new Exception("Must specify the '"
@@ -38,14 +39,14 @@ public class ReaderEvents {
             settings.setSession(2);
 
 
-            settings.getAntennas().enableAll();
+            //settings.getAntennas().enableAll();
 
             // Apply the new settings
             reader.applySettings(settings);
 
             // turn me on to listen for antenna connect and disconnect
-            reader.setAntennaChangeListener(
-                    new AntennaChangeListenerImplementation());
+           /* reader.setAntennaChangeListener(
+                    new AntennaChangeListenerImplementation());*/
 
             // turn me on to listen for GPI changes
             reader.setGpiChangeListener(
@@ -53,7 +54,7 @@ public class ReaderEvents {
 
             // turn me on to be notified when the connection to the reader is
             // list
-            reader.setConnectionLostListener(
+            /*reader.setConnectionLostListener(
                     new ConnectionLostListenerImplementation());
 
             // turn me on to be notified when we receive a keep alive from the
@@ -83,7 +84,7 @@ public class ReaderEvents {
                     new ReaderStopListenerImplementation());
 
             reader.setReaderStartListener(
-                    new ReaderStartListenerImplementation());
+                    new ReaderStartListenerImplementation());*/
 
             // don't turn on this handler as we don't want to see all the 
             // tag prinouts 

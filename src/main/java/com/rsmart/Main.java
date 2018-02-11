@@ -75,7 +75,7 @@ public class Main {
 				System.out.println("received signal - " + arg1.isState());
 				if(arg1.isState()){
 					long startL = System.currentTimeMillis();
-					new Rx().start();
+					new SmartEncoder().start();
 					
 					System.out.println("time taken to complete the write process: " + (System.currentTimeMillis() - startL));
 					/*try {

@@ -10,8 +10,8 @@ public class ReaderManager {
 	private static ImpinjReader reader;
 
 	public static ImpinjReader getReader() {
-		//final String hostname = ApplicationConfig.get("host", "169.254.1.2");
-		final String hostname = ApplicationConfig.get("host", "10.0.0.89");
+		final String hostname = ApplicationConfig.get("host", "169.254.1.1");
+		//final String hostname = ApplicationConfig.get("host", "10.0.0.89");
 		if (ReaderManager.reader != null) {
 			if (!ReaderManager.reader.isConnected()) {
 				try {
@@ -25,7 +25,6 @@ public class ReaderManager {
 			return ReaderManager.reader;
 		}
 		(ReaderManager.reader = new ImpinjReader()).setAddress(hostname);
-		System.out.println("Connecting to " + hostname);
 		try {
 			ReaderManager.reader.connect();
 		} catch (OctaneSdkException e3) {
@@ -39,6 +38,8 @@ public class ReaderManager {
 			}
 		}
 		System.out.println("Connected");
+		System.out.println("=============================");
+		System.out.println();
 		return ReaderManager.reader;
 	}
 

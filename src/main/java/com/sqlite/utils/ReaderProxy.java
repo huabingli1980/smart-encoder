@@ -27,7 +27,7 @@ import com.impinj.octane.Settings;
 import com.impinj.octane.Tag;
 import com.impinj.octane.TagReport;
 import com.impinj.octane.TagReportListener;
-import com.rsmart.Rx;
+import com.rsmart.SmartEncoder;
 import com.sqlite.domain.BasicTagInfoConsumer;
 import com.sqlite.domain.OIC;
 
@@ -82,7 +82,7 @@ public class ReaderProxy {
 			public void onGpiChanged(ImpinjReader arg0, GpiEvent arg1) {
 
 				if(arg1.isState()){
-					new Rx().start();
+					new SmartEncoder().start();
 				}
 			}
 		});

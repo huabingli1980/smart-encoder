@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import org.slf4j.LoggerFactory;
+
 import com.impinj.octane.AutoStartMode;
 import com.impinj.octane.AutoStopMode;
 import com.impinj.octane.BitPointers;
@@ -30,6 +32,9 @@ import com.impinj.octane.TagWriteOpResult;
 import com.impinj.octane.TargetTag;
 import com.impinj.octane.WordPointers;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+
 public class WriteEpc implements TagReportListener, TagOpCompleteListener {
 
     static short EPC_OP_ID = 123;
@@ -37,9 +42,10 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
     static int opSpecID = 1;
     static int outstanding = 0;
     static Random r = new Random();
+	private static long start;
     private ImpinjReader reader;
 
-    static String getRandomEpc() {
+    /*static String getRandomEpc() {
         String epc = "";
 
         // get the length of the EPC from 1 to 8 words
@@ -51,10 +57,16 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
             epc += String.format("%04X", s);
         }
         return epc;
-    }
+    }*/
 
     public static void main(String[] args) {
+    	Logger minaLogger = (Logger) LoggerFactory.getLogger("org.apache.mina");
+		if (minaLogger != null) {
+			minaLogger.setLevel(Level.WARN);
+		}
+		
         WriteEpc epcWriter = new WriteEpc();
+     
         epcWriter.run();
     }
 
@@ -77,7 +89,7 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
         seq.setExecutionCount((short) 1); // delete after one time
         seq.setState(SequenceState.Active);
         seq.setId(opSpecID++);
-
+        //seq.setBlockWriteEnabled(true);
         seq.setTargetTag(new TargetTag());
         seq.getTargetTag().setBitPointer(BitPointers.Epc);
         seq.getTargetTag().setMemoryBank(MemoryBank.Epc);
@@ -114,6 +126,7 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
         }
 
         outstanding++;
+        start = System.currentTimeMillis();
         reader.addOpSequence(seq);
     }
 
@@ -143,23 +156,47 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
             // set session one so we see the tag only once every few seconds
             settings.getReport().setIncludeAntennaPortNumber(true);
             settings.setReaderMode(ReaderMode.AutoSetDenseReader);
-            settings.setSearchMode(SearchMode.SingleTarget);
+            settings.setSearchMode(SearchMode.DualTarget);
             settings.setSession(1);
             // turn these on so we have them always
             settings.getReport().setIncludePcBits(true);
 
             // Set periodic mode so we reset the tag and it shows up with its
             // new EPC
-            settings.getAutoStart().setMode(AutoStartMode.Periodic);
-            settings.getAutoStart().setPeriodInMs(2000);
+            //settings.getAutoStart().setMode(AutoStartMode.Immediate);
+           /* settings.getAutoStart().setPeriodInMs(2000);
             settings.getAutoStop().setMode(AutoStopMode.Duration);
-            settings.getAutoStop().setDurationInMs(1000);
+            settings.getAutoStop().setDurationInMs(1000);*/
 
             // Apply the new settings
             reader.applySettings(settings);
+            
+            TagOpSequence seq = new TagOpSequence();
+            seq.setExecutionCount((short) 1);
+            seq.setState(SequenceState.Active);
+            seq.setId(opSpecID++);
+            
+           /* seq.setTargetTag(new TargetTag());
+            //seq.getTargetTag().setBitPointer(BitPointers.);
+            seq.getTargetTag().setMemoryBank(MemoryBank.Tid);
+            seq.getTargetTag().setData("E28068942000500177E258CA");*/
+            
+            
+            TagWriteOp pcWrite = new TagWriteOp();
+            pcWrite.Id = PC_BITS_OP_ID;
+            pcWrite.setMemoryBank(MemoryBank.Epc);
+            pcWrite.setWordPointer(WordPointers.PcBits);
 
+          /*  try {
+				pcWrite.setData(TagData.fromHexString(newPCString));
+			} catch (OctaneSdkException e) {
+				throw new RuntimeException("Invalid format of new EPC!" + newPCString, e);
+			}*/
+            
+            
+            
             // set up listeners to hear stuff back from SDK
-            reader.setTagReportListener(this);
+            //reader.setTagReportListener(this);
             reader.setTagOpCompleteListener(this);
 
             // Start the reader
@@ -188,12 +225,12 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
         List<Tag> tags = report.getTags();
 
         for (Tag t : tags) {
-            String newEpc = getRandomEpc();
+            String newEpc = "00B07A135403A98892124423";//getRandomEpc();
 
             if (t.isPcBitsPresent()) {
                 short pc = t.getPcBits();
                 String currentEpc = t.getEpc().toHexString();
-
+                System.out.println("current time - " + System.currentTimeMillis());
                 try {
                     programEpc(currentEpc, pc, newEpc);
                 } catch (Exception e) {
@@ -211,7 +248,8 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
                 TagWriteOpResult tr = (TagWriteOpResult) t;
 
                 if (tr.getOpId() == EPC_OP_ID) {
-                    System.out.print("  Write to EPC Complete: ");
+                    System.out.print("  Write to EPC Complete: " + (System.currentTimeMillis() - start));
+                    System.out.println("write current time - " + System.currentTimeMillis());
                 } else if (tr.getOpId() == PC_BITS_OP_ID) {
                     System.out.print("  Write to PC Complete: ");
                 }
@@ -220,5 +258,8 @@ public class WriteEpc implements TagReportListener, TagOpCompleteListener {
                 outstanding--;
             }
         }
+        
+        System.out.println("took " + (System.currentTimeMillis() - start) + " ms");
+        System.exit(0);
     }
 }
