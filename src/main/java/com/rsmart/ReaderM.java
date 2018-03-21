@@ -62,11 +62,11 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 	public static void main(String[] args) throws OctaneSdkException {
 
 		data.put("0", "00B07A135403A98805192200");
-		data.put("1", "00B07A135403A98805192201");
+		/*data.put("1", "00B07A135403A98805192201");
 		data.put("2", "00B07A135403A98805192202");
 		for (int i = 3; i < 30; i++) {
 			data.put("" + i, "00B07A135403A988051922A" + (i - 2));
-		}
+		}*/
 
 		DebugUtils.disableLog();
 		ReaderM rh = new ReaderM();
@@ -74,8 +74,8 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 	}
 
 	private void simulate() {
-		for (int i = 0; i < 10; i++) {
-			//prepareEncode("barcode" + i);
+		for (int i = 0; i < 1; i++) {
+			prepareEncode("barcode" + i);
 		}
 	}
 
@@ -128,7 +128,7 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 		reader.setGpiChangeListener(this);
 		
 		reader.applySettings(readSettings);
-		reader.start();
+		
 	}
 
 	@Override
@@ -212,11 +212,11 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 
 		// Use TID as target to search
 		
-		 TargetTag targetTag = new TargetTag();
+		/* TargetTag targetTag = new TargetTag();
 		  targetTag.setMemoryBank(MemoryBank.Tid);
-		  targetTag.setData(tid);
+		  targetTag.setData(tid);*/
 		 
-		seq.setTargetTag(targetTag);
+		seq.setTargetTag(null);
 
 		List<TagOp> ops = seq.getOps();
 
@@ -357,12 +357,12 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 	}
 
 	private void prepareEncode(String barcode) {
-		String epc = getEpc(barcode);
+		String epc = "00B07A135403A98805192200"; // getEpc(barcode);
 		String target = this.currentEpc;
 		int id = IDGenerator.genSeqId();
 
 		System.out.println("about to encode (" + id + ", " + epc + "," + target + ")");
-		writeEpcAndLock(id, epc, target);
+		writeEpcAndLock(id, epc, null);
 	}
 
 	private String getEpc(String barcode) {
