@@ -14,6 +14,7 @@ import com.impinj.octane.AntennaConfigGroup;
 import com.impinj.octane.GpiChangeListener;
 import com.impinj.octane.GpiEvent;
 import com.impinj.octane.ImpinjReader;
+import com.impinj.octane.JReader;
 import com.impinj.octane.KillResultStatus;
 import com.impinj.octane.LockResultStatus;
 import com.impinj.octane.MemoryBank;
@@ -57,7 +58,7 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 
 	static Map<String, String> data = new HashMap<String, String>();
 	static int count;
-	private ImpinjReader reader;
+	private JReader reader;
 
 	public static void main(String[] args) throws OctaneSdkException {
 
@@ -76,6 +77,7 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 	private void simulate() {
 		for (int i = 0; i < 1; i++) {
 			prepareEncode("barcode" + i);
+			reader.startRospect();
 		}
 	}
 
@@ -84,7 +86,7 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 	}
 
 	private void init() throws OctaneSdkException {
-		reader = ReaderManager.getReader();
+		reader = (JReader) ReaderManager.getReader();
 		short workingAntPort = 1;
 
 		Settings readSettings = reader.queryDefaultSettings();
@@ -174,7 +176,7 @@ public class ReaderM implements TagReportListener, TagOpCompleteListener, GpiCha
 
 	@Override
 	public void onTagReported(ImpinjReader reader, TagReport tagReport) {
-
+		System.out.println("On tag report ...");
 		List<Tag> tags = tagReport.getTags();
 		Tag tag = tags.get(0);
 		String tid = tag.getTid().toHexString();

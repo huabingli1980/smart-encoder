@@ -1,15 +1,16 @@
 package com.sqlite.utils;
 
 import com.impinj.octane.ImpinjReader;
+import com.impinj.octane.JReader;
 import com.impinj.octane.OctaneSdkException;
 
 import boot.ApplicationConfig;
 
 //10.0.0.89
 public class ReaderManager {
-	private static ImpinjReader reader;
+	private static JReader reader;
 
-	public static ImpinjReader getReader() {
+	public static JReader getReader() {
 		final String hostname = ApplicationConfig.get("host", "169.254.1.1");
 		//final String hostname = ApplicationConfig.get("host", "10.0.0.89");
 		if (ReaderManager.reader != null) {
@@ -24,7 +25,7 @@ public class ReaderManager {
 			}
 			return ReaderManager.reader;
 		}
-		(ReaderManager.reader = new ImpinjReader()).setAddress(hostname);
+		(ReaderManager.reader = new JReader()).setAddress(hostname);
 		try {
 			ReaderManager.reader.connect();
 		} catch (OctaneSdkException e3) {
